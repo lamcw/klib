@@ -11,7 +11,9 @@ int nfail = 0;
 void check(const char *what, const kstring_t *ks, const char *correct)
 {
 	if (ks->l != strlen(correct) || strcmp(ks->s, correct) != 0) {
-		fprintf(stderr, "%s produced \"%.*s\" (\"%s\" is correct)\tFAIL\n", what, (int)(ks->l), ks->s, correct);
+		fprintf(stderr,
+			"%s produced \"%.*s\" (\"%s\" is correct)\tFAIL\n",
+			what, (int)(ks->l), ks->s, correct);
 		nfail++;
 	}
 }
@@ -40,14 +42,16 @@ void test_kputl(kstring_t *ks, long n)
 
 static char *mem_gets(char *buf, int buflen, void *vtextp)
 {
-	const char **textp = (const char **) vtextp;
+	const char **textp = (const char **)vtextp;
 
 	const char *nl = strchr(*textp, '\n');
-	size_t n = nl? nl - *textp + 1 : strlen(*textp);
+	size_t n = nl ? nl - *textp + 1 : strlen(*textp);
 
-	if (n == 0) return NULL;
+	if (n == 0)
+		return NULL;
 
-	if (n > buflen-1) n = buflen-1;
+	if (n > buflen - 1)
+		n = buflen - 1;
 	memcpy(buf, *textp, n);
 	buf[n] = '\0';
 	*textp += n;
@@ -62,13 +66,15 @@ void test_kgetline(kstring_t *ks, const char *text, ...)
 	va_start(arg, text);
 	while ((exp = va_arg(arg, const char *)) != NULL) {
 		ks->l = 0;
-		if (kgetline(ks, mem_gets, &text) != 0) kputs("EOF", ks);
+		if (kgetline(ks, mem_gets, &text) != 0)
+			kputs("EOF", ks);
 		check("kgetline()", ks, exp);
 	}
 	va_end(arg);
 
 	ks->l = 0;
-	if (kgetline(ks, mem_gets, &text) == 0) check("kgetline()", ks, "EOF");
+	if (kgetline(ks, mem_gets, &text) == 0)
+		check("kgetline()", ks, "EOF");
 }
 
 int main(int argc, char **argv)
@@ -107,7 +113,8 @@ int main(int argc, char **argv)
 	test_kgetline(&ks, "\n\n", "", "", NULL);
 	test_kgetline(&ks, "foo\nbar", "foo", "bar", NULL);
 	test_kgetline(&ks, "foo\nbar\n", "foo", "bar", NULL);
-	test_kgetline(&ks,
+	test_kgetline(
+		&ks,
 		"abcdefghijklmnopqrstuvwxyz0123456789\nABCDEFGHIJKLMNOPQRSTUVWXYZ\n",
 		"abcdefghijklmnopqrstuvwxyz0123456789",
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ", NULL);
@@ -115,7 +122,9 @@ int main(int argc, char **argv)
 	if (argc > 1) {
 		FILE *f = fopen(argv[1], "r");
 		if (f) {
-			for (ks.l = 0; kgetline(&ks, (kgets_func *)fgets, f) == 0; ks.l = 0)
+			for (ks.l = 0;
+			     kgetline(&ks, (kgets_func *)fgets, f) == 0;
+			     ks.l = 0)
 				puts(ks.s);
 			fclose(f);
 		}

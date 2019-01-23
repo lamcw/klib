@@ -12,7 +12,7 @@
 #define HAVE_MEMMEM
 #endif
 
-static int str_len = 1024*1024*128;
+static int str_len = 1024 * 1024 * 128;
 static int pat_len = 30;
 static int alphabet = 2;
 static int repeat = 50;
@@ -30,7 +30,8 @@ char *gen_data(int len, int a)
 	return data;
 }
 // http://srcvault.scali.eu.org/cgi-bin/Syntax/c/BoyerMoore.c
-char *BoyerMoore( unsigned char *data, unsigned int dataLength, unsigned char *string, unsigned int strLength )
+char *BoyerMoore(unsigned char *data, unsigned int dataLength,
+		 unsigned char *string, unsigned int strLength)
 {
 	unsigned int skipTable[256], i;
 	unsigned char *search;
@@ -48,8 +49,8 @@ char *BoyerMoore( unsigned char *data, unsigned int dataLength, unsigned char *s
 	} while (i--);
 	lastChar = *--search;
 	search = data + strLength;
-	dataLength -= strLength+(strLength-1);
-	while ((int)dataLength > 0 ) {
+	dataLength -= strLength + (strLength - 1);
+	while ((int)dataLength > 0) {
 		unsigned int skip;
 		skip = skipTable[*search];
 		search += skip;
@@ -65,7 +66,8 @@ char *BoyerMoore( unsigned char *data, unsigned int dataLength, unsigned char *s
 		}
 		i = strLength;
 		do {
-			if (i-- == 0) return search;
+			if (i-- == 0)
+				return search;
 		} while (*--search == string[i]);
 		search += (strLength - i + 1);
 		dataLength--;
@@ -80,51 +82,60 @@ int main()
 	clock_t t;
 	t = clock();
 	data = gen_data(str_len, alphabet);
-	fprintf(stderr, "Generate data in %.3f sec\n", (float)(clock() - t) / CLOCKS_PER_SEC);
+	fprintf(stderr, "Generate data in %.3f sec\n",
+		(float)(clock() - t) / CLOCKS_PER_SEC);
 	{
-		t = clock(); srand48(1331);
+		t = clock();
+		srand48(1331);
 		for (i = 0; i < repeat; ++i) {
 			int y = lrand48() % (str_len - pat_len);
 			char *ret;
 			ret = kmemmem(data, str_len, data + y, pat_len, 0);
-//			printf("%d, %d\n", (int)(ret - data), y);
+			//			printf("%d, %d\n", (int)(ret - data), y);
 		}
-		fprintf(stderr, "Search patterns in %.3f sec\n", (float)(clock() - t) / CLOCKS_PER_SEC);
+		fprintf(stderr, "Search patterns in %.3f sec\n",
+			(float)(clock() - t) / CLOCKS_PER_SEC);
 	}
 	if (1) {
-		t = clock(); srand48(1331);
+		t = clock();
+		srand48(1331);
 		for (i = 0; i < repeat; ++i) {
 			int y = lrand48() % (str_len - pat_len);
 			char *ret;
 			ret = BoyerMoore(data, str_len, data + y, pat_len);
-//			printf("%d, %d\n", (int)(ret - data), y);
+			//			printf("%d, %d\n", (int)(ret - data), y);
 		}
-		fprintf(stderr, "Search patterns in %.3f sec\n", (float)(clock() - t) / CLOCKS_PER_SEC);
+		fprintf(stderr, "Search patterns in %.3f sec\n",
+			(float)(clock() - t) / CLOCKS_PER_SEC);
 	}
 #ifdef HAVE_STRNSTR
 	if (1) {
 		char *tmp;
-		t = clock(); srand48(1331);
-		tmp = calloc(pat_len+1, 1);
+		t = clock();
+		srand48(1331);
+		tmp = calloc(pat_len + 1, 1);
 		for (i = 0; i < repeat; ++i) {
 			int y = lrand48() % (str_len - pat_len);
 			char *ret;
 			memcpy(tmp, data + y, pat_len);
 			ret = strnstr(data, tmp, str_len);
 		}
-		fprintf(stderr, "Search patterns in %.3f sec\n", (float)(clock() - t) / CLOCKS_PER_SEC);		
+		fprintf(stderr, "Search patterns in %.3f sec\n",
+			(float)(clock() - t) / CLOCKS_PER_SEC);
 	}
 #endif
 #ifdef HAVE_MEMMEM
 	if (1) {
-		t = clock(); srand48(1331);
+		t = clock();
+		srand48(1331);
 		for (i = 0; i < repeat; ++i) {
 			int y = lrand48() % (str_len - pat_len);
 			char *ret;
 			ret = memmem(data, str_len, data + y, pat_len);
-//			printf("%d, %d\n", (int)(ret - data), y);
+			//			printf("%d, %d\n", (int)(ret - data), y);
 		}
-		fprintf(stderr, "Search patterns in %.3f sec\n", (float)(clock() - t) / CLOCKS_PER_SEC);
+		fprintf(stderr, "Search patterns in %.3f sec\n",
+			(float)(clock() - t) / CLOCKS_PER_SEC);
 	}
 #endif
 	return 0;

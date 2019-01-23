@@ -11,7 +11,8 @@ int main()
 	clock_t t;
 	kstring_t s, s2;
 	srand48(11);
-	s.l = s.m = 0; s.s = 0;
+	s.l = s.m = 0;
+	s.s = 0;
 	t = clock();
 	for (i = 0; i < N; ++i) {
 		int x = lrand48();
@@ -26,10 +27,12 @@ int main()
 		s.l = 0;
 		ksprintf(&s, "%d", x);
 	}
-	fprintf(stderr, "ksprintf: %lf\n", (double)(clock() - t) / CLOCKS_PER_SEC);
+	fprintf(stderr, "ksprintf: %lf\n",
+		(double)(clock() - t) / CLOCKS_PER_SEC);
 
 	srand48(11);
-	s2.l = s2.m = 0; s2.s = 0;
+	s2.l = s2.m = 0;
+	s2.s = 0;
 	t = clock();
 	for (i = 0; i < N; ++i) {
 		int x = lrand48();
@@ -37,7 +40,8 @@ int main()
 		kputw(x, &s2);
 		kputs(s2.s, &s);
 	}
-	fprintf(stderr, "kputw+kputs: %lf\n", (double)(clock() - t) / CLOCKS_PER_SEC);
+	fprintf(stderr, "kputw+kputs: %lf\n",
+		(double)(clock() - t) / CLOCKS_PER_SEC);
 	srand48(11);
 	t = clock();
 	for (i = 0; i < N; ++i) {
@@ -46,6 +50,7 @@ int main()
 		kputw(x, &s2);
 		ksprintf(&s, "%s", s2.s);
 	}
-	fprintf(stderr, "kputw+ksprintf: %lf\n", (double)(clock() - t) / CLOCKS_PER_SEC);
+	fprintf(stderr, "kputw+ksprintf: %lf\n",
+		(double)(clock() - t) / CLOCKS_PER_SEC);
 	return 0;
 }

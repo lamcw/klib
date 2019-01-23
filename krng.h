@@ -26,7 +26,8 @@ static inline uint64_t kr_rand_r(krng_t *r)
 
 static inline void kr_jump_r(krng_t *r)
 {
-	static const uint64_t JUMP[] = { 0xbeac0467eba5facbULL, 0xd86b048b86aa9922ULL };
+	static const uint64_t JUMP[] = { 0xbeac0467eba5facbULL,
+					 0xd86b048b86aa9922ULL };
 	uint64_t s0 = 0, s1 = 0;
 	int i, b;
 	for (i = 0; i < 2; ++i)
@@ -46,7 +47,10 @@ static inline void kr_srand_r(krng_t *r, uint64_t seed)
 
 static inline double kr_drand_r(krng_t *r)
 {
-	union { uint64_t i; double d; } u;
+	union {
+		uint64_t i;
+		double d;
+	} u;
 	u.i = 0x3FFULL << 52 | kr_rand_r(r) >> 12;
 	return u.d - 1.0;
 }

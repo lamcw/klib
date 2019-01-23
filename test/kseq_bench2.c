@@ -21,23 +21,28 @@ int main(int argc, char *argv[])
 		t = clock();
 		s = malloc(BUF_SIZE);
 		fp = fopen(argv[1], "r");
-		while (fgets(s, BUF_SIZE, fp));
+		while (fgets(s, BUF_SIZE, fp))
+			;
 		fclose(fp);
-		fprintf(stderr, "[fgets] %.2f sec\n", (float)(clock() - t) / CLOCKS_PER_SEC);
+		fprintf(stderr, "[fgets] %.2f sec\n",
+			(float)(clock() - t) / CLOCKS_PER_SEC);
 	}
 	{
 		int fd, dret;
 		kstream_t *ks;
 		kstring_t s;
 		t = clock();
-		s.l = s.m = 0; s.s = 0;
+		s.l = s.m = 0;
+		s.s = 0;
 		fd = open(argv[1], O_RDONLY);
 		ks = ks_init(fd);
-		while (ks_getuntil(ks, '\n', &s, &dret) >= 0);
+		while (ks_getuntil(ks, '\n', &s, &dret) >= 0)
+			;
 		free(s.s);
 		ks_destroy(ks);
 		close(fd);
-		fprintf(stderr, "[kstream] %.2f sec\n", (float)(clock() - t) / CLOCKS_PER_SEC);
+		fprintf(stderr, "[kstream] %.2f sec\n",
+			(float)(clock() - t) / CLOCKS_PER_SEC);
 	}
 	return 0;
 }

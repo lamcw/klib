@@ -4,7 +4,7 @@
 
 void ke_core_strq(int n, double *q, double *b, double *c)
 {
-	int	i, j, k, u, v;
+	int i, j, k, u, v;
 	double h, f, g, h2;
 	for (i = n - 1; i >= 1; i--) {
 		h = 0.0;
@@ -33,7 +33,8 @@ void ke_core_strq(int n, double *q, double *b, double *c)
 					g = g + q[j * n + k] * q[i * n + k];
 				if (j + 1 < i)
 					for (k = j + 1; k <= i - 1; k++)
-						g = g + q[k * n + j] * q[i * n + k];
+						g = g +
+						    q[k * n + j] * q[i * n + k];
 				c[j] = g / h;
 				f = f + g * q[j * n + i];
 			}
@@ -44,7 +45,8 @@ void ke_core_strq(int n, double *q, double *b, double *c)
 				c[j] = g;
 				for (k = 0; k <= j; k++) {
 					u = j * n + k;
-					q[u] = q[u] - f * c[k] - g * q[i * n + k];
+					q[u] = q[u] - f * c[k] -
+					       g * q[i * n + k];
 				}
 			}
 			b[i] = h;
@@ -76,7 +78,8 @@ void ke_core_strq(int n, double *q, double *b, double *c)
 	}
 }
 
-int ke_core_sstq(int n, double *b, double *c, double *q, int cal_ev, double eps, int l)
+int ke_core_sstq(int n, double *b, double *c, double *q, int cal_ev, double eps,
+		 int l)
 {
 	int i, j, k, m, it, u, v;
 	double d, f, h, g, p, r, e, s;
@@ -93,7 +96,8 @@ int ke_core_sstq(int n, double *b, double *c, double *q, int cal_ev, double eps,
 			m = m + 1;
 		if (m != j) {
 			do {
-				if (it == l) return KE_EXCESS_ITER;
+				if (it == l)
+					return KE_EXCESS_ITER;
 				it = it + 1;
 				g = b[j];
 				p = (b[j + 1] - g) / (2.0 * c[j]);
@@ -139,8 +143,7 @@ int ke_core_sstq(int n, double *b, double *c, double *q, int cal_ev, double eps,
 				}
 				c[j] = s * p;
 				b[j] = e * p;
-			}
-			while (fabs(c[j]) > d);
+			} while (fabs(c[j]) > d);
 		}
 		b[j] = b[j] + f;
 	}
@@ -170,14 +173,17 @@ int ke_core_sstq(int n, double *b, double *c, double *q, int cal_ev, double eps,
 	return 0;
 }
 
-#define MALLOC(type, size) ((type*)malloc(size * sizeof(type)))
+#define MALLOC(type, size) ((type *)malloc(size * sizeof(type)))
 
-int ke_eigen_sd(int n, double *a, double *v, int cal_ev, double eps, int max_iter)
+int ke_eigen_sd(int n, double *a, double *v, int cal_ev, double eps,
+		int max_iter)
 {
 	double *c;
 	int r;
-	if (1.0 + eps <= 1.0) eps = 1e-7;
-	if (max_iter <= 0) max_iter = 50;
+	if (1.0 + eps <= 1.0)
+		eps = 1e-7;
+	if (max_iter <= 0)
+		max_iter = 50;
 	c = MALLOC(double, n);
 	ke_core_strq(n, a, v, c);
 	r = ke_core_sstq(n, v, c, a, cal_ev, eps, max_iter);

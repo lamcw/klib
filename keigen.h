@@ -19,7 +19,8 @@ extern "C" {
  *
  * @return 0 on success; KE_EXCESS_ITER if too many iterations
  */
-int ke_eigen_sd(int n, double *a, double *v, int cal_ev, double eps, int max_iter);
+int ke_eigen_sd(int n, double *a, double *v, int cal_ev, double eps,
+		int max_iter);
 
 /**
  * Transform a real symmetric matrix to a tridiagonal matrix
@@ -44,7 +45,8 @@ void ke_core_strq(int n, double *q, double *b, double *c);
  *
  * @return 0 on success; KE_EXCESS_ITER if too many iterations
  */
-int ke_core_sstq(int n, double *b, double *c, double *q, int cal_ev, double eps, int l);
+int ke_core_sstq(int n, double *b, double *c, double *q, int cal_ev, double eps,
+		 int l);
 
 #ifdef __cplusplus
 }

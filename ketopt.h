@@ -3,13 +3,13 @@
 
 #include <string.h> /* for strchr() and strncmp() */
 
-#define ko_no_argument       0
+#define ko_no_argument 0
 #define ko_required_argument 1
 #define ko_optional_argument 2
 
 typedef struct {
-	int ind;   /* equivalent to optind */
-	int opt;   /* equivalent to optopt */
+	int ind; /* equivalent to optind */
+	int opt; /* equivalent to optopt */
 	char *arg; /* equivalent to optarg */
 	int longidx; /* index of a long option; or -1 if short */
 	/* private variables not intended for external uses */
@@ -24,7 +24,8 @@ typedef struct {
 
 static ketopt_t KETOPT_INIT = { 1, 0, 0, -1, 1, 0, 0 };
 
-static void ketopt_permute(char *argv[], int j, int n) /* move argv[j] over n elements to the left */
+static void ketopt_permute(char *argv[], int j,
+			   int n) /* move argv[j] over n elements to the left */
 {
 	int k;
 	char *p = argv[j];
@@ -53,11 +54,13 @@ static void ketopt_permute(char *argv[], int j, int n) /* move argv[j] over n el
  *         argv[] is fully processed; '?' for an unknown option or an ambiguous
  *         long option; ':' if an option argument is missing
  */
-static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *ostr, const ko_longopt_t *longopts)
+static int ketopt(ketopt_t *s, int argc, char *argv[], int permute,
+		  const char *ostr, const ko_longopt_t *longopts)
 {
 	int opt = -1, i0, j;
 	if (permute) {
-		while (s->i < argc && (argv[s->i][0] != '-' || argv[s->i][1] == '\0'))
+		while (s->i < argc &&
+		       (argv[s->i][0] != '-' || argv[s->i][1] == '\0'))
 			++s->i, ++s->n_args;
 	}
 	s->arg = 0, s->longidx = -1, i0 = s->i;
@@ -65,7 +68,8 @@ static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *
 		s->ind = s->i - s->n_args;
 		return -1;
 	}
-	if (argv[s->i][0] == '-' && argv[s->i][1] == '-') { /* "--" or a long option */
+	if (argv[s->i][0] == '-' &&
+	    argv[s->i][1] == '-') { /* "--" or a long option */
 		if (argv[s->i][2] == '\0') { /* a bare "--" */
 			ketopt_permute(argv, s->i, s->n_args);
 			++s->i, s->ind = s->i - s->n_args;
@@ -87,8 +91,10 @@ static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *
 				s->opt = opt = o->val, s->longidx = o - longopts;
 				if (argv[s->i][j] == '=') s->arg = &argv[s->i][j + 1];
 				if (o->has_arg == 1 && argv[s->i][j] == '\0') {
-					if (s->i < argc - 1) s->arg = argv[++s->i];
-					else opt = ':'; /* missing option argument */
+					if (s->i < argc - 1)
+						s->arg = argv[++s->i];
+					else
+						opt = ':'; /* missing option argument */
 				}
 			}
 		}
@@ -101,9 +107,12 @@ static int ketopt(ketopt_t *s, int argc, char *argv[], int permute, const char *
 			opt = '?'; /* unknown option */
 		} else if (p[1] == ':') {
 			if (argv[s->i][s->pos] == 0) {
-				if (s->i < argc - 1) s->arg = argv[++s->i];
-				else opt = ':'; /* missing option argument */
-			} else s->arg = &argv[s->i][s->pos];
+				if (s->i < argc - 1)
+					s->arg = argv[++s->i];
+				else
+					opt = ':'; /* missing option argument */
+			} else
+				s->arg = &argv[s->i][s->pos];
 			s->pos = -1;
 		}
 	}

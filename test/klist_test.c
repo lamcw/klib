@@ -6,8 +6,8 @@ KLIST_INIT(32, int, __int_free)
 
 int main()
 {
-	klist_t(32) *kl;
-	kliter_t(32) *p;
+	klist_t(32) * kl;
+	kliter_t(32) * p;
 	kl = kl_init(32);
 	*kl_pushp(32, kl) = 1;
 	*kl_pushp(32, kl) = 10;

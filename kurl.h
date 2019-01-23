@@ -3,10 +3,10 @@
 
 #include <sys/types.h>
 
-#define KURL_NULL       1
+#define KURL_NULL 1
 #define KURL_INV_WHENCE 2
-#define KURL_SEEK_OUT   3
-#define KURL_NO_AUTH    4
+#define KURL_SEEK_OUT 3
+#define KURL_NO_AUTH 4
 
 struct kurl_t;
 typedef struct kurl_t kurl_t;

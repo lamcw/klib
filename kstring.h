@@ -33,15 +33,17 @@
 #include <stdio.h>
 
 #ifndef kroundup32
-#define kroundup32(x) (--(x), (x)|=(x)>>1, (x)|=(x)>>2, (x)|=(x)>>4, (x)|=(x)>>8, (x)|=(x)>>16, ++(x))
+#define kroundup32(x)                                                          \
+	(--(x), (x) |= (x) >> 1, (x) |= (x) >> 2, (x) |= (x) >> 4,             \
+	 (x) |= (x) >> 8, (x) |= (x) >> 16, ++(x))
 #endif
 
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)
-#define KS_ATTR_PRINTF(fmt, arg) __attribute__((__format__ (__printf__, fmt, arg)))
+#define KS_ATTR_PRINTF(fmt, arg)                                               \
+	__attribute__((__format__(__printf__, fmt, arg)))
 #else
 #define KS_ATTR_PRINTF(fmt, arg)
 #endif
-
 
 /* kstring_t is a simple non-opaque type whose fields are likely to be
  * used directly by user code (but see also ks_str() and ks_len() below).
@@ -69,25 +71,25 @@ typedef struct {
 extern "C" {
 #endif
 
-	int kvsprintf(kstring_t *s, const char *fmt, va_list ap) KS_ATTR_PRINTF(2,0);
-	int ksprintf(kstring_t *s, const char *fmt, ...) KS_ATTR_PRINTF(2,3);
-	int ksplit_core(char *s, int delimiter, int *_max, int **_offsets);
-	char *kstrstr(const char *str, const char *pat, int **_prep);
-	char *kstrnstr(const char *str, const char *pat, int n, int **_prep);
-	void *kmemmem(const void *_str, int n, const void *_pat, int m, int **_prep);
+int kvsprintf(kstring_t *s, const char *fmt, va_list ap) KS_ATTR_PRINTF(2, 0);
+int ksprintf(kstring_t *s, const char *fmt, ...) KS_ATTR_PRINTF(2, 3);
+int ksplit_core(char *s, int delimiter, int *_max, int **_offsets);
+char *kstrstr(const char *str, const char *pat, int **_prep);
+char *kstrnstr(const char *str, const char *pat, int n, int **_prep);
+void *kmemmem(const void *_str, int n, const void *_pat, int m, int **_prep);
 
-	/* kstrtok() is similar to strtok_r() except that str is not
+/* kstrtok() is similar to strtok_r() except that str is not
 	 * modified and both str and sep can be NULL. For efficiency, it is
 	 * actually recommended to set both to NULL in the subsequent calls
 	 * if sep is not changed. */
-	char *kstrtok(const char *str, const char *sep, ks_tokaux_t *aux);
+char *kstrtok(const char *str, const char *sep, ks_tokaux_t *aux);
 
-	/* kgetline() uses the supplied fgets()-like function to read a "\n"-
+/* kgetline() uses the supplied fgets()-like function to read a "\n"-
 	 * or "\r\n"-terminated line from fp.  The line read is appended to the
 	 * kstring without its terminator and 0 is returned; EOF is returned at
 	 * EOF or on error (determined by querying fp, as per fgets()). */
-	typedef char *kgets_func(char *, int, void *);
-	int kgetline(kstring_t *s, kgets_func *fgets, void *fp);
+typedef char *kgets_func(char *, int, void *);
+int kgetline(kstring_t *s, kgets_func *fgets, void *fp);
 
 #ifdef __cplusplus
 }
@@ -99,7 +101,7 @@ static inline int ks_resize(kstring_t *s, size_t size)
 		char *tmp;
 		s->m = size;
 		kroundup32(s->m);
-		if ((tmp = (char*)realloc(s->s, s->m)))
+		if ((tmp = (char *)realloc(s->s, s->m)))
 			s->s = tmp;
 		else
 			return -1;
@@ -135,7 +137,7 @@ static inline int kputsn(const char *p, int l, kstring_t *s)
 		char *tmp;
 		s->m = s->l + l + 2;
 		kroundup32(s->m);
-		if ((tmp = (char*)realloc(s->s, s->m)))
+		if ((tmp = (char *)realloc(s->s, s->m)))
 			s->s = tmp;
 		else
 			return EOF;
@@ -157,7 +159,7 @@ static inline int kputc(int c, kstring_t *s)
 		char *tmp;
 		s->m = s->l + 2;
 		kroundup32(s->m);
-		if ((tmp = (char*)realloc(s->s, s->m)))
+		if ((tmp = (char *)realloc(s->s, s->m)))
 			s->s = tmp;
 		else
 			return EOF;
@@ -173,7 +175,7 @@ static inline int kputc_(int c, kstring_t *s)
 		char *tmp;
 		s->m = s->l + 1;
 		kroundup32(s->m);
-		if ((tmp = (char*)realloc(s->s, s->m)))
+		if ((tmp = (char *)realloc(s->s, s->m)))
 			s->s = tmp;
 		else
 			return EOF;
@@ -188,7 +190,7 @@ static inline int kputsn_(const void *p, int l, kstring_t *s)
 		char *tmp;
 		s->m = s->l + l;
 		kroundup32(s->m);
-		if ((tmp = (char*)realloc(s->s, s->m)))
+		if ((tmp = (char *)realloc(s->s, s->m)))
 			s->s = tmp;
 		else
 			return EOF;
@@ -203,19 +205,25 @@ static inline int kputw(int c, kstring_t *s)
 	char buf[16];
 	int i, l = 0;
 	unsigned int x = c;
-	if (c < 0) x = -x;
-	do { buf[l++] = x%10 + '0'; x /= 10; } while (x > 0);
-	if (c < 0) buf[l++] = '-';
+	if (c < 0)
+		x = -x;
+	do {
+		buf[l++] = x % 10 + '0';
+		x /= 10;
+	} while (x > 0);
+	if (c < 0)
+		buf[l++] = '-';
 	if (s->l + l + 1 >= s->m) {
 		char *tmp;
 		s->m = s->l + l + 2;
 		kroundup32(s->m);
-		if ((tmp = (char*)realloc(s->s, s->m)))
+		if ((tmp = (char *)realloc(s->s, s->m)))
 			s->s = tmp;
 		else
 			return EOF;
 	}
-	for (i = l - 1; i >= 0; --i) s->s[s->l++] = buf[i];
+	for (i = l - 1; i >= 0; --i)
+		s->s[s->l++] = buf[i];
 	s->s[s->l] = 0;
 	return 0;
 }
@@ -225,18 +233,21 @@ static inline int kputuw(unsigned c, kstring_t *s)
 	char buf[16];
 	int l, i;
 	unsigned x;
-	if (c == 0) return kputc('0', s);
-	for (l = 0, x = c; x > 0; x /= 10) buf[l++] = x%10 + '0';
+	if (c == 0)
+		return kputc('0', s);
+	for (l = 0, x = c; x > 0; x /= 10)
+		buf[l++] = x % 10 + '0';
 	if (s->l + l + 1 >= s->m) {
 		char *tmp;
 		s->m = s->l + l + 2;
 		kroundup32(s->m);
-		if ((tmp = (char*)realloc(s->s, s->m)))
+		if ((tmp = (char *)realloc(s->s, s->m)))
 			s->s = tmp;
 		else
 			return EOF;
 	}
-	for (i = l - 1; i >= 0; --i) s->s[s->l++] = buf[i];
+	for (i = l - 1; i >= 0; --i)
+		s->s[s->l++] = buf[i];
 	s->s[s->l] = 0;
 	return 0;
 }
@@ -246,19 +257,25 @@ static inline int kputl(long c, kstring_t *s)
 	char buf[32];
 	int i, l = 0;
 	unsigned long x = c;
-	if (c < 0) x = -x;
-	do { buf[l++] = x%10 + '0'; x /= 10; } while (x > 0);
-	if (c < 0) buf[l++] = '-';
+	if (c < 0)
+		x = -x;
+	do {
+		buf[l++] = x % 10 + '0';
+		x /= 10;
+	} while (x > 0);
+	if (c < 0)
+		buf[l++] = '-';
 	if (s->l + l + 1 >= s->m) {
 		char *tmp;
 		s->m = s->l + l + 2;
 		kroundup32(s->m);
-		if ((tmp = (char*)realloc(s->s, s->m)))
+		if ((tmp = (char *)realloc(s->s, s->m)))
 			s->s = tmp;
 		else
 			return EOF;
 	}
-	for (i = l - 1; i >= 0; --i) s->s[s->l++] = buf[i];
+	for (i = l - 1; i >= 0; --i)
+		s->s[s->l++] = buf[i];
 	s->s[s->l] = 0;
 	return 0;
 }
