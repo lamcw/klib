@@ -55,25 +55,27 @@ klib (see [this benchmark][31]).
 To effectively use klib, it is important to understand how it achieves generic
 programming. We will use the hash table library as an example:
 
-    #include "khash.h"
-    KHASH_MAP_INIT_INT(m32, char)        // instantiate structs and methods
-    int main() {
-        int ret, is_missing;
-        khint_t k;
-        khash_t(m32) *h = kh_init(m32);  // allocate a hash table
-        k = kh_put(m32, h, 5, &ret);     // insert a key to the hash table
-        if (!ret) kh_del(m32, h, k);
-        kh_value(h, k) = 10;             // set the value
-        k = kh_get(m32, h, 10);          // query the hash table
-        is_missing = (k == kh_end(h));   // test if the key is present
-        k = kh_get(m32, h, 5);
-        kh_del(m32, h, k);               // remove a key-value pair
-        for (k = kh_begin(h); k != kh_end(h); ++k)  // traverse
-            if (kh_exist(h, k))          // test if a bucket contains data
-    			kh_value(h, k) = 1;
-        kh_destroy(m32, h);              // deallocate the hash table
-        return 0;
-    }
+```c
+#include "khash.h"
+KHASH_MAP_INIT_INT(m32, char)        // instantiate structs and methods
+int main() {
+	int ret, is_missing;
+	khint_t k;
+	khash_t(m32) *h = kh_init(m32);  // allocate a hash table
+	k = kh_put(m32, h, 5, &ret);     // insert a key to the hash table
+	if (!ret) kh_del(m32, h, k);
+	kh_value(h, k) = 10;             // set the value
+	k = kh_get(m32, h, 10);          // query the hash table
+	is_missing = (k == kh_end(h));   // test if the key is present
+	k = kh_get(m32, h, 5);
+	kh_del(m32, h, k);               // remove a key-value pair
+	for (k = kh_begin(h); k != kh_end(h); ++k)  // traverse
+	if (kh_exist(h, k))          // test if a bucket contains data
+		kh_value(h, k) = 1;
+	kh_destroy(m32, h);              // deallocate the hash table
+	return 0;
+}
+```
 
 In this example, the second line instantiates a hash table with `unsigned` as
 the key type and `char` as the value type. `m32` names such a type of hash table.
@@ -90,36 +92,38 @@ _apparent_ undefined `m32` 'variable'). To understand why the code is correct,
 let's go a bit further into the source code of `khash.h`, whose skeleton looks
 like:
 
-    #define KHASH_INIT(name, SCOPE, key_t, val_t, is_map, _hashf, _hasheq) \
-      typedef struct { \
-        int n_buckets, size, n_occupied, upper_bound; \
-        unsigned *flags; \
-        key_t *keys; \
-        val_t *vals; \
-      } kh_##name##_t; \
-      SCOPE inline kh_##name##_t *init_##name() { \
-        return (kh_##name##_t*)calloc(1, sizeof(kh_##name##_t)); \
-      } \
-      SCOPE inline int get_##name(kh_##name##_t *h, key_t k) \
-      ... \
-      SCOPE inline void destroy_##name(kh_##name##_t *h) { \
-        if (h) { \
-          free(h->keys); free(h->flags); free(h->vals); free(h); \
-        } \
-      }
-    
-    #define _int_hf(key) (unsigned)(key)
-    #define _int_heq(a, b) (a == b)
-    #define khash_t(name) kh_##name##_t
-    #define kh_value(h, k) ((h)->vals[k])
-    #define kh_begin(h, k) 0
-    #define kh_end(h) ((h)->n_buckets)
-    #define kh_init(name) init_##name()
-    #define kh_get(name, h, k) get_##name(h, k)
-    #define kh_destroy(name, h) destroy_##name(h)
-    ...
-    #define KHASH_MAP_INIT_INT(name, val_t) \
-    	KHASH_INIT(name, static, unsigned, val_t, is_map, _int_hf, _int_heq)
+```c
+#define KHASH_INIT(name, SCOPE, key_t, val_t, is_map, _hashf, _hasheq)		\
+	typedef struct {							\
+		int n_buckets, size, n_occupied, upper_bound;			\
+		unsigned *flags;						\
+		key_t *keys;							\
+		val_t *vals;							\
+	} kh_##name##_t;							\
+	SCOPE inline kh_##name##_t *init_##name() {				\
+		return (kh_##name##_t*)calloc(1, sizeof(kh_##name##_t));	\
+	}									\
+	SCOPE inline int get_##name(kh_##name##_t *h, key_t k)			\
+	...									\
+	SCOPE inline void destroy_##name(kh_##name##_t *h) {			\
+		if (h) {							\
+			free(h->keys); free(h->flags); free(h->vals); free(h);	\
+		}								\
+	}
+
+#define _int_hf(key) (unsigned)(key)
+#define _int_heq(a, b) (a == b)
+#define khash_t(name) kh_##name##_t
+#define kh_value(h, k) ((h)->vals[k])
+#define kh_begin(h, k) 0
+#define kh_end(h) ((h)->n_buckets)
+#define kh_init(name) init_##name()
+#define kh_get(name, h, k) get_##name(h, k)
+#define kh_destroy(name, h) destroy_##name(h)
+...
+#define KHASH_MAP_INIT_INT(name, val_t)						\
+	KHASH_INIT(name, static, unsigned, val_t, is_map, _int_hf, _int_heq)
+```
 
 `KHASH_INIT()` is a huge macro defining all the structs and methods. When this
 macro is called, all the code inside it will be inserted by the [C
@@ -131,39 +135,41 @@ part of a symbol based on the parameter of the macro. In the end, the C
 preprocessor will generate the following code and feed it to the compiler
 (macro `kh_exist(h,k)` is a little complex and not expanded for simplicity):
 
-    typedef struct {
-      int n_buckets, size, n_occupied, upper_bound;
-      unsigned *flags;
-      unsigned *keys;
-      char *vals;
-    } kh_m32_t;
-    static inline kh_m32_t *init_m32() {
-      return (kh_m32_t*)calloc(1, sizeof(kh_m32_t));
-    }
-    static inline int get_m32(kh_m32_t *h, unsigned k)
-    ...
-    static inline void destroy_m32(kh_m32_t *h) {
-      if (h) {
-        free(h->keys); free(h->flags); free(h->vals); free(h);
-      }
-    }
-
-	int main() {
-		int ret, is_missing;
-		khint_t k;
-		kh_m32_t *h = init_m32();
-		k = put_m32(h, 5, &ret);
-		if (!ret) del_m32(h, k);
-		h->vals[k] = 10;
-		k = get_m32(h, 10);
-		is_missing = (k == h->n_buckets);
-		k = get_m32(h, 5);
-		del_m32(h, k);
-		for (k = 0; k != h->n_buckets; ++k)
-			if (kh_exist(h, k)) h->vals[k] = 1;
-		destroy_m32(h);
-		return 0;
+```c
+typedef struct {
+	int n_buckets, size, n_occupied, upper_bound;
+	unsigned *flags;
+	unsigned *keys;
+	char *vals;
+} kh_m32_t;
+static inline kh_m32_t *init_m32() {
+	return (kh_m32_t*)calloc(1, sizeof(kh_m32_t));
+}
+static inline int get_m32(kh_m32_t *h, unsigned k)
+...
+static inline void destroy_m32(kh_m32_t *h) {
+	if (h) {
+		free(h->keys); free(h->flags); free(h->vals); free(h);
 	}
+}
+
+int main() {
+	int ret, is_missing;
+	khint_t k;
+	kh_m32_t *h = init_m32();
+	k = put_m32(h, 5, &ret);
+	if (!ret) del_m32(h, k);
+	h->vals[k] = 10;
+	k = get_m32(h, 10);
+	is_missing = (k == h->n_buckets);
+	k = get_m32(h, 5);
+	del_m32(h, k);
+	for (k = 0; k != h->n_buckets; ++k)
+		if (kh_exist(h, k)) h->vals[k] = 1;
+	destroy_m32(h);
+	return 0;
+}
+```
 
 This is the C program we know.
 
